@@ -1,0 +1,135 @@
+<?php
+require "ccc.php";
+include "nav.php";
+
+session_start();  
+
+if (isset($_SESSION['username'])) {
+  $username = $_SESSION['username'];
+} else {
+  $username = '';
+  //header('location: home.php');
+}
+
+class InfoFetch {
+  public $conn;
+
+  public function __construct() {
+    global $database;
+    $this->conn = $database->db;
+  }
+
+  public function fetchUserInfo($username) {
+    $query = "SELECT * FROM users WHERE uname=:username";
+    $statement = $this->conn->prepare($query);
+    $statement->execute(array(':username' => $username));
+    $fetch_info = $statement->fetch(PDO::FETCH_ASSOC);
+
+    return $fetch_info;
+  }
+}
+
+$infoFetch = new InfoFetch();
+$userInfo = $infoFetch->fetchUserInfo($username);
+
+
+class Profile_update {
+  public $conn;
+
+  public function __construct() {
+      global $database;
+      $this->conn = $database->db;
+  }
+
+  public function updateProfile() {
+      if(isset($_POST["add"])) {
+          $phone = $_POST['phone'];
+          $flat = $_POST['flat'];
+          $build = $_POST['build'];
+          $area = $_POST['area'];
+          $land = $_POST['land'];
+          $pin = $_POST['pin'];
+          $house = $_POST['house'];
+          $district = $_POST['district'];
+
+          // Combine address components
+          $address = "$phone, $flat, $build, $area, $land, $pin, $house, $district";
+
+          // Assuming you have the username stored in the session
+          session_start();
+          $username = $_SESSION['username'];
+
+          // Retrieve user information
+          $infoFetch = new InfoFetch();
+          $userInfo = $infoFetch->fetchUserInfo($username);
+
+          if ($userInfo) {
+              // Use parameterized query to prevent SQL injection
+              $sql = "UPDATE `users` SET `phone` = :phone, `address` = :address WHERE `email` = :email";
+              $statement = $this->conn->prepare($sql);
+
+              // Bind parameters
+              $statement->bindParam(':phone', $phone, PDO::PARAM_STR);
+              $statement->bindParam(':address', $address, PDO::PARAM_STR);
+              $statement->bindParam(':email', $userInfo['email'], PDO::PARAM_STR);
+
+              // Execute the update query
+              $statement->execute();
+
+              echo "Profile updated successfully";
+          } else {
+              echo "User not found";
+          }
+      } else {
+          echo "chu";
+      }
+  }
+}
+
+$Profile_update = new Profile_update();
+$Profile_update->updateProfile();
+
+
+$Profile_update = new Profile_update();
+$Profile_update->updateProfile();
+
+
+      
+  //   class Profile_update {
+  //     public $conn;
+    
+  //     public function __construct() {
+  //         global $database;
+  //         $this->conn = $database->db;
+  //     }
+  
+  //     public function updateProfile() {
+  //         if(isset($_POST["address"])) { // Change "add" to "address"
+  //             $phone = $_POST['phone'];
+  //             $flat = $_POST['flat'];
+  //             $build = $_POST['build'];
+  //             $area = $_POST['area'];
+  //             $land = $_POST['land'];
+  //             $pin = $_POST['pin'];
+  //             $house = $_POST['house'];
+  //             $district = $_POST['district'];
+  //             $address = "$flat, $build, $area, $land, $pin, $house, $district";
+  //             global $username;
+  //             $ddsfs=$username;
+  //             $sql = "UPDATE `users` SET `phone` = $phone, `address` = $address WHERE `users`.`uname` =$ddsfs;";
+  //             $statement = $this->conn->prepare($sql);
+  //           $statement->execute(array(""=> $phone,""=> $flat,""=> $build,
+  //         } else {
+  //             echo "chu";
+  //         }
+  //     }
+  // }
+  
+  // $Profile_update = new Profile_update();
+  // $Profile_update->updateProfile();
+  
+
+//$userInfo['email'];
+
+?>
+
